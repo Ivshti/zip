@@ -3,7 +3,6 @@
 
 var INFLATE = require("./inflate");
 var bops = require("bops");
-var fs = require("fs");
 
 var LOCAL_FILE_HEADER = 0x04034b50;
 var CENTRAL_DIRECTORY_FILE_HEADER = 0x02014b50;
@@ -13,30 +12,8 @@ var MADE_BY_UNIX = 3;     // See http://www.pkware.com/documents/casestudies/APP
 var Reader = exports.Reader = function (data) {
     if (!(this instanceof Reader))
         return new Reader(data);
-	if (bops.is(data))
-		this._source = new BufferSource(data);
-	else
-		this._source = new FdSource(data);
+    this._source = new BufferSource(data);
     this._offset = 0;
-}
-
-function FdSource(fd) {
-	this._fileLength = fs.fstatSync(fd).size;
-	this.length = function() {
-		return this._fileLength;
-	}
-	this.read = function(start, length) {
-		var result = bops.create(length);
-		while (length > 0) {
-			var pos = 0;
-			var toRead = length > 8192? 8192: length;
-			fs.readSync(fd, result, pos, toRead, start);
-			length -= toRead;
-			start += toRead;
-			pos += toRead;
-		}
-		return result;
-	}
 }
 
 function BufferSource(buffer) {
